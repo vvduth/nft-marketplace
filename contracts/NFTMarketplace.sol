@@ -107,8 +107,28 @@ contract NFTMarketPlace is ERC721URIStorage {
     }
 
     function getMyNFTs() public view returns(ListedToken[] memory) {
-        uint myNftCount = _tokenIds.current();
+        uint totalItemCount = _tokenIds.current();
         uint itemCount  = 0 ; 
         uint currentIndex = 0 ; 
+
+        // get the count of the ntfs you have 
+        for (uint i = 0 ; i < totalItemCount ; i++)  {
+            if (idToListToken[i+1].owner == msg.sender || idToListToken[i+1].seller == msg.sender) {
+               itemCount += 1 ; 
+            }
+        }
+
+        // after getting thw count, create and array have count elems 
+        ListedToken[] memory items = new ListedToken[](itemCount) ; 
+        for (uint i = 0 ; i < totalItemCount ; i++) {
+            if (idToListToken[i+1].owner == msg.sender || idToListToken[i+1].seller == msg.sender) {
+                uint currentId = i +1 ;
+                ListedToken storage currentItem = idToListToken[currentId] ; 
+                items[currentIndex] = currentItem ; 
+                currentIndex += 1 ; 
+            }
+            
+        }
+        return items; 
     }
 }
