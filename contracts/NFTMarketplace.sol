@@ -70,9 +70,45 @@ contract NFTMarketPlace is ERC721URIStorage {
         _tokenIds.increment();
         uint256 currentTokenId = _tokenIds.current() ; 
         _safeMint(msg.sender, currentTokenId);
-        // safe mint : allow cretato to retrive the token if some problems happen with the contract
+        // safe mint : allow creator to retrive the token if some problems happen with the contract
         
-        
+        // this goes and makes sense with the map fucntion i believe
         _setTokenURI(currentTokenId, tokenURI);
+
+        createListedToken(currentTokenId, price) ;
+
+        return currentTokenId ;
+    }
+
+    function createListedToken(uint256 tokenId, uint256 price ) private {
+        idToListToken[tokenId]  = ListedToken(
+            tokenId, 
+            payable(address(this)),
+            payable(msg.sender),
+            price,
+            true  
+        );
+        _transfer(msg.sender, address(this), tokenId);
+    }
+
+    function getAllNFTs() public view returns(ListedToken[] memory) {
+        uint nftCount = _tokenIds.current() ;
+        ListedToken[] memory tokens = new ListedToken[](nftCount) ; 
+
+        uint currentIndex = 0 ; 
+
+        for (uint i = 0 ; i < nftCount ; i++) {
+            uint currentId = i + 1 ; 
+            ListedToken storage currentItem = idToListToken[currentId] ;
+            tokens[currentIndex] = currentItem ;
+            currentIndex += 1 ; 
+        }
+        return tokens ;
+    }
+
+    function getMyNFTs() public view returns(ListedToken[] memory) {
+        uint myNftCount = _tokenIds.current();
+        uint itemCount  = 0 ; 
+        uint currentIndex = 0 ; 
     }
 }
