@@ -88,6 +88,8 @@ contract NFTMarketPlace is ERC721URIStorage {
             price,
             true  
         );
+
+        // while create token , send the nft to the new onwe(which is the cotnract itself(address.this), now the contract have the right to execute the sell ntfs function)
         _transfer(msg.sender, address(this), tokenId);
     }
 
@@ -130,5 +132,29 @@ contract NFTMarketPlace is ERC721URIStorage {
             
         }
         return items; 
+    }
+
+    function executeSale (uint tokenId) public payable {
+        uint price = idToListToken[tokenId].price ; 
+        require( msg.value == price , "Please enter the price in order to purchase the NFT");
+
+        address seller = idToListToken[tokenId].seller ; 
+
+        idToListToken[tokenId].currentlyListed = true ;
+        idToListToken[tokenId].seller = payable(msg.sender) ; 
+
+        _itemsSold.increment();
+        _transfer(address(this), msg.sender, tokenId);
+
+        // the nft bering trasnfer from contract to sender, the contract apprived sale the nft on behalf of the actual onwer
+
+        // after send that to the new buyer (msg.sender), the contract no logner the owner, we nedd to create the fucntion to approve for the new owner futures sales,. 
+        approve(address(this), tokenId);
+
+        // transfer the list price to owner of merket place
+        payable(owner).transfer(listPrice) ; 
+
+        // give the sller the money
+        payable(seller).transfer(msg.value) ; 
     }
 }
