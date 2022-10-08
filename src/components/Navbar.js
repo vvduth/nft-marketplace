@@ -26,9 +26,7 @@ function Navbar() {
     const signer = provider.getSigner();
     const addr = await signer.getAddress();
     updateAddress(addr);
-    return addr ; 
   }
-
   function updateButton() {
     const ethereumButton = document.querySelector(".enableEthereumButton");
     ethereumButton.textContent = "Connected";
@@ -61,27 +59,19 @@ function Navbar() {
 
   const checkIfWalletIsConnected = async () => {
     try {
-      if (!ethereum) return alert("Please install meatmask");
-      const address_test = await getAddress() ; 
-      if (address_test) {
-        updateButton() ; 
-        return ; 
-      } ;
-      const accounts = await ethereum.request({ method: "eth_accounts" });
-      console.log(accounts);
-
-      if (accounts.length) {
-        setCurrentAccount(accounts[0]);
-      } else {
-        console.log("No account found!");
-      }
+      await connectWebsite() ;
+      
     } catch (e) {
       console.log(e);
     }
   };
 
   useEffect(() => {
-    checkIfWalletIsConnected();
+    if (!ethereum) {
+      return alert("please install wallet")
+    }
+    getAddress() ; 
+    updateButton() ; 
   },[]);
 
   return (

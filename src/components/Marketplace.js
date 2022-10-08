@@ -84,7 +84,7 @@ return (
             </div>
             <div className="flex mt-5 justify-between flex-wrap max-w-screen-xl text-center">
                 {
-                    data.length > 0 ? (
+                    data?.length > 0 ? (
                         <>
                         {data.map((value, index) => {
                             return <NFTTile data={value} key={index}></NFTTile>;

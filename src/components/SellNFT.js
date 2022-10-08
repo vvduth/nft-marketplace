@@ -15,73 +15,87 @@ export default function SellNFT() {
   const [message, updateMessage] = useState("");
   const location = useLocation();
 
+  //This function uploads the NFT image to IPFS
   async function OnChangeFile(e) {
-    let file = e.target.files[0];
+    var file = e.target.files[0];
+    //check for file extension
     try {
+      //upload the file to IPFS
       const response = await uploadFileToIPFS(file);
       if (response.success === true) {
-        console.log("Uploaded image to pinata: ", response.pinataURL);
+        console.log("Uploaded image to Pinata: ", response.pinataURL);
         setFileURL(response.pinataURL);
       }
     } catch (e) {
-      console.log("error during file upload ", e);
+      console.log("Error during file upload", e);
     }
   }
-  async function uploadMetaDataToIPFS() {
-    const {name, description, price } = formParams ; 
 
-    if (!name || !description || !price || !fileURL ) {
-        return ; 
-    }
+  //This function uploads the metadata to IPFS
+  async function uploadMetadataToIPFS() {
+    const { name, description, price } = formParams;
+    //Make sure that none of the fields are empty
+    if (!name || !description || !price || !fileURL) return;
 
     const nftJSON = {
-        name, description, price, image: fileURL 
-    }
+      name,
+      description,
+      price,
+      image: fileURL,
+    };
+
     try {
-        const response = await uploadJSONToIPFS(nftJSON) ;
-        if (response.success === true ) {
-            console.log("upload josn to pinatra: " + response) ;
-            return response.pinataURL ; 
-        }
-    } catch(e) {
-        console.log("error uplaoding json data: ", e)
+      //upload the metadata JSON to IPFS
+      const response = await uploadJSONToIPFS(nftJSON);
+      if (response.success === true) {
+        console.log("Uploaded JSON to Pinata: ", response);
+        return response.pinataURL;
+      }
+    } catch (e) {
+      console.log("error uploading JSON metadata:", e);
     }
   }
 
   async function listNFT(e) {
     e.preventDefault();
 
+    //Upload data to IPFS
     try {
-      const metaDataURL = await uploadMetaDataToIPFS();
+      const metadataURL = await uploadMetadataToIPFS();
+      //After adding your Hardhat network to your metamask, this code will get providers and signers
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
+      updateMessage("Please wait.. uploading (upto 5 mins)");
 
-      updateMessage(
-        "Please wait, the file might take up to 5 mins to upload..."
-      );
-
+      //Pull the deployed contract instance
       let contract = new ethers.Contract(
         Marketplace.address,
         Marketplace.abi,
         signer
       );
+
+      //massage the params to be sent to the create NFT request
       const price = ethers.utils.parseUnits(formParams.price, "ether");
       let listingPrice = await contract.getListPrice();
       listingPrice = listingPrice.toString();
 
-      let transaction = await contract.createToken(metaDataURL, price, {
+      //actually create the NFT
+      let transaction = await contract.createToken(metadataURL, price, {
         value: listingPrice,
       });
       await transaction.wait();
 
-      alert("Success fully listed your NFT");
+      alert("Successfully listed your NFT!");
       updateMessage("");
       updateFormParams({ name: "", description: "", price: "" });
       window.location.replace("/");
     } catch (e) {
-      alert("Upload error. Please try again ", e);
+      alert("Upload error" + e);
+      console.log(e)
     }
   }
+
+  console.log("Working", process.env);
   return (
     <div className="">
       <Navbar></Navbar>
