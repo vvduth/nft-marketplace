@@ -63,7 +63,10 @@ function Navbar() {
     try {
       if (!ethereum) return alert("Please install meatmask");
       const address_test = await getAddress() ; 
-      if (address_test) return ;
+      if (address_test) {
+        updateButton() ; 
+        return ; 
+      } ;
       const accounts = await ethereum.request({ method: "eth_accounts" });
       console.log(accounts);
 

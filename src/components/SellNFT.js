@@ -30,7 +30,7 @@ export default function SellNFT() {
   async function uploadMetaDataToIPFS() {
     const {name, description, price } = formParams ; 
 
-    if (!name || !description || !price  ) {
+    if (!name || !description || !price || !fileURL ) {
         return ; 
     }
 
@@ -53,7 +53,7 @@ export default function SellNFT() {
 
     try {
       const metaDataURL = await uploadMetaDataToIPFS();
-      const provider = new ethers.providers.Web3Provider(window.etherums);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
 
       updateMessage(
