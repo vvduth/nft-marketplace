@@ -8,6 +8,7 @@ import {
   useRouteMatch,
   useParams,
 } from "react-router-dom";
+import { ethers } from "ethers";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 
@@ -15,14 +16,17 @@ function Navbar() {
   const [connected, toggleConnect] = useState(false);
   const location = useLocation();
   const [currAddress, updateAddress] = useState("0x");
-  const {ethereum} = window ; 
+  const [currentAccount, setCurrentAccount] = useState("");
+  const { ethereum } = window;
 
+ 
   async function getAddress() {
     const ethers = require("ethers");
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const addr = await signer.getAddress();
     updateAddress(addr);
+    return addr ; 
   }
 
   function updateButton() {
@@ -35,23 +39,6 @@ function Navbar() {
   }
 
   async function connectWebsite() {
-    // const chainId = await window.ethereum.request({ method: "eth_chainId" });
-    // if (chainId !== "0x5") {
-    //   //alert('Incorrect network! Switch your metamask network to Rinkeby');
-    //   await window.ethereum.request({
-    //     method: "wallet_switchEthereumChain",
-    //     params: [{ chainId: "0x5" }],
-    //   });
-    // }
-    // await window.ethereum
-    //   .request({ method: "eth_requestAccounts" })
-    //   .then(() => {
-    //     updateButton();
-    //     console.log("here");
-    //     getAddress();
-    //     window.location.replace(location.pathname);
-    //   });
-
     try {
       if (!ethereum)
         return alert("Cannot connect to wallet, please install metamask");
@@ -60,28 +47,39 @@ function Navbar() {
         method: "eth_requestAccounts",
       });
 
+      console.log(accounts);
+
+      setCurrentAccount(accounts[0]);
       
+      updateButton();
+      getAddress();
     } catch (e) {
       console.log(e);
       throw new Error("no eth object");
     }
   }
 
-  useEffect(() => {
-    
-    let val = window.ethereum;
-    console.log(val)
-    // if (val) {
-    //   console.log("here");
-    //   getAddress();
-    //   toggleConnect(val);
-    //   updateButton();
-    // }
+  const checkIfWalletIsConnected = async () => {
+    try {
+      if (!ethereum) return alert("Please install meatmask");
+      const address_test = await getAddress() ; 
+      if (address_test) return ;
+      const accounts = await ethereum.request({ method: "eth_accounts" });
+      console.log(accounts);
 
-    window.ethereum.on("accountsChanged", function (accounts) {
-      window.location.replace(location.pathname);
-    });
-  });
+      if (accounts.length) {
+        setCurrentAccount(accounts[0]);
+      } else {
+        console.log("No account found!");
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    checkIfWalletIsConnected();
+  },[]);
 
   return (
     <div className="">
@@ -131,7 +129,10 @@ function Navbar() {
                 </li>
               )}
               <li>
-                <button onClick={connectWebsite} className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">
+                <button
+                  onClick={connectWebsite}
+                  className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
+                >
                   {connected ? "Connected" : "Connect Wallet"}
                 </button>
               </li>
