@@ -16,7 +16,7 @@ function Navbar() {
   const [connected, toggleConnect] = useState(false);
   const location = useLocation();
   const [currAddress, updateAddress] = useState("0x");
-  const [currentAccount, setCurrentAccount] = useState("");
+  const [currentAccount, setCurrentAccount] = useState();
   const { ethereum } = window;
 
  
@@ -36,30 +36,24 @@ function Navbar() {
     ethereumButton.classList.add("bg-green-500");
   }
 
-  async function connectWebsite() {
+  const connectWallet = async () => {
     try {
-      if (!ethereum)
-        return alert("Cannot connect to wallet, please install metamask");
-
+      if (!ethereum) {
+        return alert("Cannot connect to the wallet, please install network.")
+      }
       const accounts = await ethereum.request({
         method: "eth_requestAccounts",
       });
-
-      console.log(accounts);
-
-      setCurrentAccount(accounts[0]);
-      
-      updateButton();
-      getAddress();
+      setCurrentAccount(accounts[0])
     } catch (e) {
-      console.log(e);
-      throw new Error("no eth object");
+      console.log(e) ;
+      throw new Error("no eth object ")
     }
   }
 
   const checkIfWalletIsConnected = async () => {
     try {
-      await connectWebsite() ;
+      await connectWallet() ;
       
     } catch (e) {
       console.log(e);
@@ -123,10 +117,10 @@ function Navbar() {
               )}
               <li>
                 <button
-                  onClick={connectWebsite}
+                  onClick={connectWallet}
                   className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
                 >
-                  {connected ? "Connected" : "Connect Wallet"}
+                  {currentAccount ? "Connected" : "Connect Wallet"}
                 </button>
               </li>
             </ul>
@@ -134,10 +128,10 @@ function Navbar() {
         </ul>
       </nav>
       <div className="text-white text-bold text-right mr-10 text-sm">
-        {currAddress !== "0x"
+        {currentAccount
           ? "Connected to"
           : "Not Connected. Please login to view NFTs"}{" "}
-        {currAddress !== "0x" ? currAddress.substring(0, 15) + "..." : ""}
+        {currentAccount ? currentAccount.substring(0, 15) + "..." : ""}
       </div>
     </div>
   );
